@@ -139,7 +139,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        const map = L.map('map').setView([37.775, -122.419], 15);
+        const map = L.map('map').setView([37.66764062716302, -121.87393089643088], 19);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         
@@ -249,7 +249,7 @@
                 
                 for (let i = 0; i < markers.length; i++) {
                     if (markers[i].options.title === roomName) {
-                        map.setView(markers[i].getLatLng(), 20);
+                        map.setView(markers[i].getLatLng(), 19);
                         markers[i].openPopup();
                         break;
                     }
