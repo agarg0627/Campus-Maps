@@ -56,6 +56,34 @@
             border-radius: 4px;
         }
         
+        .tab-container {
+            margin-bottom: 10px;
+        }
+        
+        .tab {
+            display: inline-block;
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: #ddd;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .tab.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 0 4px 4px 4px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         button {
             background-color: #4CAF50;
             color: white;
@@ -105,24 +133,54 @@
             <h1>Campus Maps</h1>
             
             <div class="form-group">
-                <label for="start-room">Start:</label>
-                <select id="start-room">
-                    {% for room in rooms %}
-                    <option value="{{ room }}">{{ room }}</option>
-                    {% endfor %}
-                </select>
+                <label>Start:</label>
+                <div class="tab-container">
+                    <div class="tab active" data-tab="start-room-tab">Room</div>
+                    <div class="tab" data-tab="start-teacher-tab">Teacher</div>
+                </div>
+                
+                <div class="tab-content active" id="start-room-tab">
+                    <select id="start-room">
+                        {% for room in rooms %}
+                        <option value="{{ room }}">{{ room }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="tab-content" id="start-teacher-tab">
+                    <select id="start-teacher">
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher }}">{{ teacher }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
             
             <div class="form-group">
-                <label for="end-room">End:</label>
-                <select id="end-room">
-                    {% for room in rooms %}
-                    <option value="{{ room }}">{{ room }}</option>
-                    {% endfor %}
-                </select>
+                <label>End:</label>
+                <div class="tab-container">
+                    <div class="tab active" data-tab="end-room-tab">Room</div>
+                    <div class="tab" data-tab="end-teacher-tab">Teacher</div>
+                </div>
+                
+                <div class="tab-content active" id="end-room-tab">
+                    <select id="end-room">
+                        {% for room in rooms %}
+                        <option value="{{ room }}">{{ room }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="tab-content" id="end-teacher-tab">
+                    <select id="end-teacher">
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher }}">{{ teacher }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
             
-            <button id="find-path">Go</button>
+            <button id="find-path">Find Path</button>
             
             <div id="result" style="display: none;">
                 <h3>Best Route</h3>
@@ -146,9 +204,45 @@
         let markers = [];
         let pathLine = null;
         
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+
+                const formGroup = this.closest('.form-group');
+                
+                formGroup.querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                this.classList.add('active');
+                
+                formGroup.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
         document.getElementById('find-path').addEventListener('click', function() {
-            const startRoom = document.getElementById('start-room').value;
-            const endRoom = document.getElementById('end-room').value;
+            let startValue, endValue;
+            let startType, endType;
+            
+            if (document.querySelector('[data-tab="start-room-tab"]').classList.contains('active')) {
+                startValue = document.getElementById('start-room').value;
+                startType = 'room';
+            } else {
+                startValue = document.getElementById('start-teacher').value;
+                startType = 'teacher';
+            }
+            
+            if (document.querySelector('[data-tab="end-room-tab"]').classList.contains('active')) {
+                endValue = document.getElementById('end-room').value;
+                endType = 'room';
+            } else {
+                endValue = document.getElementById('end-teacher').value;
+                endType = 'teacher';
+            }
             
             clearMap();
             
@@ -158,7 +252,12 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ start: startRoom, end: endRoom }),
+                body: JSON.stringify({ 
+                    start: startValue, 
+                    end: endValue,
+                    start_type: startType,
+                    end_type: endType
+                }),
             })
             .then(response => response.json())
             .then(data => {
@@ -219,7 +318,7 @@
                 markers.push(marker);
             
                 if (index === pathWithCoords.length - 1) {
-                    marker.openPopup()
+                    marker.openPopup();
                 }
             });
             
@@ -256,7 +355,6 @@
                 }
             }
         });
-
     </script>
 </body>
 </html>
